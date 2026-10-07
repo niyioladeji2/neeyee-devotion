@@ -229,12 +229,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       Share this devotion</button>
     <div class="sharepanel" id="sharePanel" hidden>
       <div class="sharemain">
-        <button type="button" class="sharebig" id="shareLink"><span>🔗</span><b>Share as link</b><small>Title, verse and today's truth</small></button>
-        <button type="button" class="sharebig" id="shareImg"><span>🖼️</span><b>Share as image</b><small>For Status, Instagram and more</small></button>
+        <button type="button" class="sharebig" id="shareLink"><span>💬</span><b>Share as text</b><small>Title, verse and today's truth</small></button>
+        <button type="button" class="sharebig" id="shareImg"><span>🖼️</span><b>Share as image</b><small>For Status, Instagram, Facebook</small></button>
       </div>
       <div class="sharequick" aria-label="Quick share">
         <button type="button" data-net="whatsapp">WhatsApp</button>
-        <button type="button" data-net="facebook">Facebook</button>
         <button type="button" data-net="x">X</button>
         <button type="button" data-net="telegram">Telegram</button>
         <button type="button" data-net="email">Email</button>
@@ -428,14 +427,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   const APP_NAME="Daily Trust";
   function cur(){ return byKey[key(sel)]; }
   function dayLink(){ const d=cur(); return location.origin+location.pathname+'#d'+d.m+'-'+d.d; }
-  function shareText(){ const d=cur(); return '📖 '+MONTHS[d.m-1]+' '+d.d+': '+d.t+'\n\n"'+d.v+'" ('+d.r+')\n\nToday\'s truth: '+d.tr+'\n\nRead or listen on '+APP_NAME+':'; }
+  function shareText(){ const d=cur(); return '📖 '+MONTHS[d.m-1]+' '+d.d+': '+d.t+'\n\n"'+d.v+'" ('+d.r+')\n\nToday\'s truth: '+d.tr+'\n\n— '+APP_NAME+' 🙏'; }
   function note(s){ $('shareNote').textContent=s; }
   $('shareBtn').onclick=()=>{ const h=$('sharePanel'); h.hidden=!h.hidden; $('shareBtn').setAttribute('aria-expanded',!h.hidden); note(''); $('sharePreview').hidden=true; };
   async function copy(s){ try{ await navigator.clipboard.writeText(s); return true; }catch(e){ const ta=document.createElement('textarea'); ta.value=s; document.body.append(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} ta.remove(); return ok; } }
   $('shareLink').onclick=async()=>{
-    const text=shareText(), url=dayLink();
-    if(navigator.share){ try{ await navigator.share({title:cur().t, text, url}); return; }catch(e){ if(e.name==='AbortError') return; } }
-    note(await copy(text+' '+url) ? 'Copied. Paste it into any app to share.' : 'Use one of the buttons below to share.');
+    const text=shareText();
+    if(navigator.share){ try{ await navigator.share({title:cur().t, text}); return; }catch(e){ if(e.name==='AbortError') return; } }
+    note(await copy(text) ? 'Copied. Paste it into any app to share.' : 'Use one of the buttons below to share.');
   };
   function wrapLines(ctx, text, maxW){
     const words=text.split(/\s+/), lines=[]; let line='';
@@ -487,20 +486,19 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     const file=new File([blob],name,{type:'image/png'});
     const prev=$('sharePreview'); if(prev.src) URL.revokeObjectURL(prev.src); prev.src=URL.createObjectURL(blob); prev.hidden=false;
     if(navigator.canShare && navigator.canShare({files:[file]})){
-      try{ await navigator.share({files:[file], title:d.t, text:d.t+' · '+dayLink()}); note(''); return; }catch(e){ if(e.name==='AbortError'){ note(''); return; } }
+      try{ await navigator.share({files:[file], title:d.t}); note(''); return; }catch(e){ if(e.name==='AbortError'){ note(''); return; } }
     }
     const a=document.createElement('a'); a.href=prev.src; a.download=name; document.body.append(a); a.click(); a.remove();
     note('Image saved to your downloads. Share it from your gallery.');
   };
   document.querySelectorAll('.sharequick button').forEach(b=>b.onclick=async()=>{
-    const text=shareText(), url=dayLink(), both=text+' '+url, e=encodeURIComponent; let href='';
+    const text=shareText(), e=encodeURIComponent; let href='';
     switch(b.dataset.net){
-      case 'whatsapp': href='https://wa.me/?text='+e(both); break;
-      case 'facebook': href='https://www.facebook.com/sharer/sharer.php?u='+e(url); break;
-      case 'x': href='https://twitter.com/intent/tweet?text='+e(cur().t+' · "'+cur().v.slice(0,150)+'" ('+cur().r+')')+'&url='+e(url); break;
-      case 'telegram': href='https://t.me/share/url?url='+e(url)+'&text='+e(text); break;
-      case 'email': href='mailto:?subject='+e("Today's devotion: "+cur().t)+'&body='+e(both); break;
-      case 'copy': note(await copy(both)?'Copied. Paste it anywhere.':'Couldn’t copy on this phone.'); return;
+      case 'whatsapp': href='https://wa.me/?text='+e(text); break;
+      case 'x': { const d=cur(); let s='"'+d.v+'" ('+d.r+')\n\n'+d.tr+'\n\n— '+APP_NAME; if(s.length>280) s='"'+d.v.slice(0,280-d.r.length-APP_NAME.length-14)+'…" ('+d.r+')\n\n— '+APP_NAME; href='https://twitter.com/intent/tweet?text='+e(s); break; }
+      case 'telegram': href='https://t.me/share/url?url='+e(text); break;
+      case 'email': href='mailto:?subject='+e("Today's devotion: "+cur().t)+'&body='+e(text); break;
+      case 'copy': note(await copy(text)?'Copied. Paste it anywhere.':'Couldn’t copy on this phone.'); return;
     }
     window.open(href,'_blank','noopener');
   });
