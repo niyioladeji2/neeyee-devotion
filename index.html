@@ -7,6 +7,14 @@
 <meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#151b1c" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Neeyee's Annual Devotion">
+<meta property="og:description" content="A daily devotion to help you build your relationship with God, one day at a time. Read or listen, free.">
+<meta property="og:url" content="https://niyioladeji2.github.io/neeyee-devotion/">
+<meta property="og:image" content="https://niyioladeji2.github.io/neeyee-devotion/icons/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -86,6 +94,18 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .donebtn{border:1.5px solid var(--done);background:transparent;color:var(--done);border-radius:999px;padding:12px;font-weight:700;width:100%}
 .donebtn[aria-pressed="true"]{background:var(--done-soft)}
 .donebtn.ready{background:var(--done);color:var(--play-ink)}
+.sharebtn{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--accent);border-radius:999px;padding:11px;font-weight:700;width:100%}
+.sharebtn svg{width:18px;height:18px;fill:currentColor}
+.sharepanel{display:flex;flex-direction:column;gap:10px}
+.sharemain{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sharebig{border:1px solid var(--line);background:var(--accent-soft);border-radius:14px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+.sharebig span{font-size:1.4rem}
+.sharebig b{font-size:.9rem;color:var(--ink)}
+.sharebig small{font-size:.74rem;color:var(--muted);line-height:1.3}
+.sharequick{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.sharequick button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:.8rem;font-weight:600}
+#sharePreview{width:100%;max-width:320px;align-self:center;border-radius:12px;border:1px solid var(--line)}
+.note2{text-align:center;font-size:.82rem;color:var(--muted);min-height:1em}
 .cheer{text-align:center;font-weight:700;color:var(--done);background:var(--done-soft);border-radius:12px;padding:10px}
 .stats{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.82rem;justify-content:center}
 .stats b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -204,6 +224,25 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   <section class="card">
     <button class="donebtn" id="doneBtn" type="button" aria-pressed="false">Mark today as complete</button>
     <div class="cheer" id="cheer" role="status" hidden></div>
+    <button class="sharebtn" id="shareBtn" type="button" aria-expanded="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 16.1c-.8 0-1.4.3-2 .8l-7.1-4.2c.1-.2.1-.5.1-.7s0-.5-.1-.7L16 7.2c.5.5 1.2.8 2 .8 1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3c0 .2 0 .5.1.7L8 9.8C7.5 9.3 6.8 9 6 9c-1.7 0-3 1.3-3 3s1.3 3 3 3c.8 0 1.5-.3 2-.8l7.1 4.2c-.1.2-.1.4-.1.6 0 1.6 1.3 2.9 2.9 2.9s2.9-1.3 2.9-2.9-1.2-2.9-2.8-2.9z"/></svg>
+      Share this devotion</button>
+    <div class="sharepanel" id="sharePanel" hidden>
+      <div class="sharemain">
+        <button type="button" class="sharebig" id="shareLink"><span>🔗</span><b>Share as link</b><small>Title, verse and today's truth</small></button>
+        <button type="button" class="sharebig" id="shareImg"><span>🖼️</span><b>Share as image</b><small>For Status, Instagram and more</small></button>
+      </div>
+      <div class="sharequick" aria-label="Quick share">
+        <button type="button" data-net="whatsapp">WhatsApp</button>
+        <button type="button" data-net="facebook">Facebook</button>
+        <button type="button" data-net="x">X</button>
+        <button type="button" data-net="telegram">Telegram</button>
+        <button type="button" data-net="email">Email</button>
+        <button type="button" data-net="copy">Copy</button>
+      </div>
+      <img id="sharePreview" alt="Preview of the shareable image" hidden>
+      <div class="note2" id="shareNote" role="status"></div>
+    </div>
     <div class="stats"><span><b id="doneCount">0</b> of 366 completed</span><span>·</span><span>Streak <b id="streak">0 days</b></span></div>
   </section>
 
@@ -291,7 +330,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     $('readCard').hidden = mode!=='read';
     // audio
     const url = AUDIO[key(sel)];
-    if (changed){ finished=false; $('cheer').hidden=true; audio.pause(); setPlaying(false); audio.removeAttribute('src'); $('seek').value=0; $('cur').textContent='0:00'; $('dur').textContent='–:––'; }
+    if (changed){ finished=false; $('sharePanel').hidden=true; $('shareBtn').setAttribute('aria-expanded',false); $('sharePreview').hidden=true; $('cheer').hidden=true; audio.pause(); setPlaying(false); audio.removeAttribute('src'); $('seek').value=0; $('cur').textContent='0:00'; $('dur').textContent='–:––'; }
     $('playBtn').disabled = !url;
     $('audioNote').hidden = !!url;
     if (!url) $('audioNote').textContent = 'The audio for this day isn’t available yet. You can read it instead.';
@@ -385,6 +424,85 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   }
   applyTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
   $('themeBtn').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+  // ---- sharing ----
+  function cur(){ return byKey[key(sel)]; }
+  function dayLink(){ const d=cur(); return location.origin+location.pathname+'#d'+d.m+'-'+d.d; }
+  function shareText(){ const d=cur(); return '📖 '+MONTHS[d.m-1]+' '+d.d+': '+d.t+'\n\n"'+d.v+'" ('+d.r+')\n\nToday\'s truth: '+d.tr+'\n\nRead or listen on Neeyee\'s Annual Devotion:'; }
+  function note(s){ $('shareNote').textContent=s; }
+  $('shareBtn').onclick=()=>{ const h=$('sharePanel'); h.hidden=!h.hidden; $('shareBtn').setAttribute('aria-expanded',!h.hidden); note(''); $('sharePreview').hidden=true; };
+  async function copy(s){ try{ await navigator.clipboard.writeText(s); return true; }catch(e){ const ta=document.createElement('textarea'); ta.value=s; document.body.append(ta); ta.select(); let ok=false; try{ ok=document.execCommand('copy'); }catch(_){} ta.remove(); return ok; } }
+  $('shareLink').onclick=async()=>{
+    const text=shareText(), url=dayLink();
+    if(navigator.share){ try{ await navigator.share({title:cur().t, text, url}); return; }catch(e){ if(e.name==='AbortError') return; } }
+    note(await copy(text+' '+url) ? 'Copied. Paste it into any app to share.' : 'Use one of the buttons below to share.');
+  };
+  function wrapLines(ctx, text, maxW){
+    const words=text.split(/\s+/), lines=[]; let line='';
+    words.forEach(w=>{ const t2=line?line+' '+w:w; if(ctx.measureText(t2).width>maxW && line){ lines.push(line); line=w; } else line=t2; });
+    if(line) lines.push(line); return lines;
+  }
+  async function makeImage(){
+    try{ await document.fonts.ready; await Promise.all(['italic 500 60px "Cormorant Garamond"','600 80px "Cormorant Garamond"','700 30px Manrope','400 40px Literata'].map(f=>document.fonts.load(f))); }catch(e){}
+    const d=cur(), W=1080, H=1350, c=document.createElement('canvas'); c.width=W; c.height=H; let x=c.getContext('2d');
+    const g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,'#eef2ef'); g.addColorStop(1,'#f5f3ee'); x.fillStyle=g; x.fillRect(0,0,W,H);
+    x.fillStyle='#fffdf9'; x.strokeStyle='#e0ddd3'; x.lineWidth=2;
+    const r=40, bx=60, by=60, bw=W-120, bh=H-120; x.beginPath(); x.roundRect? x.roundRect(bx,by,bw,bh,r) : x.rect(bx,by,bw,bh); x.fill(); x.stroke();
+    const main=x, L=document.createElement('canvas'); L.width=W; L.height=H; x=L.getContext('2d');
+    const pad=130, maxW=W-2*pad; let y=180;
+    x.fillStyle='#567769'; x.font='700 30px Manrope, sans-serif'; x.textBaseline='alphabetic';
+    x.fillText((MONTHS[d.m-1]+' '+d.d+'  ·  '+DATA.themes[d.m-1]).toUpperCase(), pad, y);
+    // title
+    let ts=78; x.font='600 '+ts+'px "Cormorant Garamond", Georgia, serif'; let tl=wrapLines(x,d.t,maxW);
+    while(tl.length>2 && ts>56){ ts-=4; x.font='600 '+ts+'px "Cormorant Garamond", Georgia, serif'; tl=wrapLines(x,d.t,maxW); }
+    x.fillStyle='#26353a'; y+=30; tl.forEach(l=>{ y+=ts*1.1; x.fillText(l,pad,y); });
+    // verse (shrink to fit)
+    let vs=54, vl, truthS=38, tlns;
+    const fit=()=>{ x.font='italic 500 '+vs+'px "Cormorant Garamond", Georgia, serif'; vl=wrapLines(x,'“'+d.v+'”',maxW);
+      x.font='400 '+truthS+'px Literata, Georgia, serif'; tlns=wrapLines(x,d.tr,maxW-36);
+      return y+50+vl.length*vs*1.35+vs*0.35+56+70+tlns.length*truthS*1.45+40 < H-230; };
+    while(!fit() && vs>34){ vs-=2; truthS=Math.max(30,truthS-1); }
+    y+=50; x.fillStyle='#2f3b3d'; x.font='italic 500 '+vs+'px "Cormorant Garamond", Georgia, serif'; vl.forEach(l=>{ y+=vs*1.35; x.fillText(l,pad,y); });
+    y+=Math.round(vs*0.35)+56; x.fillStyle='#5d6d6a'; x.font='700 32px Manrope, sans-serif'; x.fillText(d.r.toUpperCase(),pad,y);
+    // truth block
+    y+=70; const ty=y; x.fillStyle='#567769'; x.font='700 26px Manrope, sans-serif'; x.fillText("TODAY'S TRUTH",pad+36,y);
+    x.fillStyle='#2f3b3d'; x.font='400 '+truthS+'px Literata, Georgia, serif'; tlns.forEach(l=>{ y+=truthS*1.45; x.fillText(l,pad+36,y); });
+    x.fillStyle='#567769'; x.fillRect(pad,ty-26,6,y-ty+40);
+    // place the content layer, vertically centred in the card above the footer
+    const top=120, bottom=H-215, used=(y+30)-top, off=Math.max(0,Math.round((bottom-top-used)/2));
+    x=main; x.drawImage(L, 0, top, W, used, 0, top+off, W, used);
+    // footer
+    x.fillStyle='#e6eee9'; x.fillRect(bx,H-200,bw,80);
+    x.fillStyle='#26353a'; x.font='600 40px "Cormorant Garamond", Georgia, serif'; x.textAlign='center';
+    x.fillText("Neeyee's Annual Devotion", W/2, H-148);
+    x.fillStyle='#5d6d6a'; x.font='600 24px Manrope, sans-serif';
+    x.fillText(location.host+location.pathname.replace(/\/$/,''), W/2, H-90);
+    x.textAlign='left';
+    return new Promise(res=>c.toBlob(res,'image/png'));
+  }
+  $('shareImg').onclick=async()=>{
+    note('Making your image…');
+    const blob=await makeImage(), d=cur();
+    const name='devotion-'+MONTHS[d.m-1].toLowerCase()+'-'+d.d+'.png';
+    const file=new File([blob],name,{type:'image/png'});
+    const prev=$('sharePreview'); if(prev.src) URL.revokeObjectURL(prev.src); prev.src=URL.createObjectURL(blob); prev.hidden=false;
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      try{ await navigator.share({files:[file], title:d.t, text:d.t+' · '+dayLink()}); note(''); return; }catch(e){ if(e.name==='AbortError'){ note(''); return; } }
+    }
+    const a=document.createElement('a'); a.href=prev.src; a.download=name; document.body.append(a); a.click(); a.remove();
+    note('Image saved to your downloads. Share it from your gallery.');
+  };
+  document.querySelectorAll('.sharequick button').forEach(b=>b.onclick=async()=>{
+    const text=shareText(), url=dayLink(), both=text+' '+url, e=encodeURIComponent; let href='';
+    switch(b.dataset.net){
+      case 'whatsapp': href='https://wa.me/?text='+e(both); break;
+      case 'facebook': href='https://www.facebook.com/sharer/sharer.php?u='+e(url); break;
+      case 'x': href='https://twitter.com/intent/tweet?text='+e(cur().t+' · "'+cur().v.slice(0,150)+'" ('+cur().r+')')+'&url='+e(url); break;
+      case 'telegram': href='https://t.me/share/url?url='+e(url)+'&text='+e(text); break;
+      case 'email': href='mailto:?subject='+e("Today's devotion: "+cur().t)+'&body='+e(both); break;
+      case 'copy': note(await copy(both)?'Copied. Paste it anywhere.':'Couldn’t copy on this phone.'); return;
+    }
+    window.open(href,'_blank','noopener');
+  });
 
   // ---- standalone app extras ----
   let deferredPrompt = null;
