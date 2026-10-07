@@ -113,12 +113,16 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 @media (prefers-reduced-motion:no-preference){.hero,.card{animation:rise .35s ease both}@keyframes rise{from{transform:translateY(6px);opacity:.6}to{transform:none;opacity:1}}}
 </style>
 
+<script>try{document.documentElement.dataset.theme=JSON.parse(localStorage.getItem('nad.theme'))||'light';}catch(e){document.documentElement.dataset.theme='light';}</script>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">Neeyee's Annual Devotion<small>Build your relationship with God, one day at a time</small></div>
+    <div style="display:flex;gap:6px;flex:none">
+    <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch to dark colors">🌙</button>
     <button class="iconbtn" id="installBtn" type="button" aria-haspopup="dialog">＋ Install app</button>
+    </div>
   </header>
 <div class="scrim" id="instScrim" hidden>
   <div class="sheet" role="region" aria-labelledby="instTitle">
@@ -373,6 +377,14 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if(!$('calScrim').hidden) closeCal(); $('instScrim').hidden=true; } });
   // refresh "today" if the app stays open past midnight
   document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible'){ const n=new Date(); if(n.getDate()!==today.d||n.getMonth()+1!==today.m){ const wasToday=isToday(sel); today.m=n.getMonth()+1; today.d=n.getDate(); if(wasToday) sel={...today}; render(wasToday);} } });
+  function applyTheme(th){
+    document.documentElement.dataset.theme=th; store.set('nad.theme',th);
+    $('themeBtn').textContent = th==='dark' ? '☀️' : '🌙';
+    $('themeBtn').setAttribute('aria-label', th==='dark' ? 'Switch to light colors' : 'Switch to dark colors');
+    document.querySelectorAll('meta[name=theme-color]').forEach(m=>{ m.removeAttribute('media'); m.content = th==='dark' ? '#151b1c' : '#f5f3ee'; });
+  }
+  applyTheme(document.documentElement.dataset.theme==='dark'?'dark':'light');
+  $('themeBtn').onclick=()=>applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
 
   // ---- standalone app extras ----
   let deferredPrompt = null;
