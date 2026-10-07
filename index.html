@@ -300,6 +300,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     const dt=new Date(); dt.setHours(12,0,0,0);
     if(!log[iso(dt)]) dt.setDate(dt.getDate()-1);
     let s=0; while(log[iso(dt)]){ s++; dt.setDate(dt.getDate()-1); }
+    // also count consecutive devotion days completed, ending at today's (or yesterday's) devotion
+    let i=DATA.days.findIndex(x=>x.m===today.m&&x.d===today.d), s2=0;
+    if(!done[today.m+'-'+today.d]) i--;
+    while(i>=0 && done[DATA.days[i].m+'-'+DATA.days[i].d]){ s2++; i--; }
+    s=Math.max(s,s2);
     $('streak').textContent = s + (s===1?' day':' days');
     return s;
   }
