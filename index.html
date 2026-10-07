@@ -4,14 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="An app that helps you build your relationship with God, one day at a time.">
-<meta name="theme-color" content="#1f3044">
+<meta name="theme-color" content="#f5f3ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151b1c" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Devotion">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Neeyee's Annual Devotion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,21 +21,21 @@
 body{margin:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 /* Layout: one calm reading column, a dawn-blue header card, a gold accent for the one action that matters */
 :root{
-  --bg:#f2f4f6; --surface:#ffffff; --ink:#1c2633; --muted:#5d6878; --line:#dde2e8;
-  --accent:#8a6516; --accent-soft:#f3ead6; --hero:#1f3044; --hero-ink:#f4f1ea; --hero-muted:#b7c2cf;
-  --done:#2f6b4f; --done-soft:#e1efe7;
+  --bg:#f5f3ee; --surface:#fffdf9; --ink:#2f3b3d; --muted:#6c7776; --line:#e4e0d7;
+  --accent:#567769; --accent-soft:#e6eee9; --hero:#e4ebe7; --hero-ink:#26353a; --hero-muted:#5d6d6a;
+  --done:#4d7660; --done-soft:#e4eee7; --play-ink:#ffffff;
   --display:"Cormorant Garamond", Georgia, "Times New Roman", serif;
   --read:"Literata", Georgia, serif;
   --ui:"Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#10161e; --surface:#18212c; --ink:#e7eaee; --muted:#9aa6b4; --line:#2a3542;
-  --accent:#d9b25c; --accent-soft:#2c2617; --hero:#1b2a3b; --hero-ink:#f4f1ea; --hero-muted:#9fb0c2;
-  --done:#7cc4a0; --done-soft:#1a2c24; color-scheme:dark}}
+  --bg:#151b1c; --surface:#1b2324; --ink:#e3e7e4; --muted:#9ba7a4; --line:#2b3536;
+  --accent:#9cc0b1; --accent-soft:#213130; --hero:#1f2a2a; --hero-ink:#e8ede9; --hero-muted:#a3b3ae;
+  --done:#8fc4a5; --done-soft:#1e2e26; --play-ink:#13201b; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#10161e; --surface:#18212c; --ink:#e7eaee; --muted:#9aa6b4; --line:#2a3542;
-  --accent:#d9b25c; --accent-soft:#2c2617; --hero:#1b2a3b; --hero-ink:#f4f1ea; --hero-muted:#9fb0c2;
-  --done:#7cc4a0; --done-soft:#1a2c24; color-scheme:dark}
+  --bg:#151b1c; --surface:#1b2324; --ink:#e3e7e4; --muted:#9ba7a4; --line:#2b3536;
+  --accent:#9cc0b1; --accent-soft:#213130; --hero:#1f2a2a; --hero-ink:#e8ede9; --hero-muted:#a3b3ae;
+  --done:#8fc4a5; --done-soft:#1e2e26; --play-ink:#13201b; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:15px;line-height:1.5}
@@ -54,23 +55,21 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);ou
 .todaychip.go{background:transparent;border:1px solid var(--accent)}
 .modes{display:grid;grid-template-columns:1fr 1fr;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
 .modes button{border:0;background:transparent;border-radius:999px;padding:9px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:8px}
-.modes button[aria-pressed="true"]{background:var(--hero);color:var(--hero-ink)}
-.hero{background:var(--hero);color:var(--hero-ink);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
+.modes button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.hero{background:var(--hero);border:1px solid var(--line);color:var(--hero-ink);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
 .eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--hero-muted)}
 .hero h1{font-family:var(--display);font-weight:600;font-size:2rem;line-height:1.1;margin:0;text-wrap:balance}
 .verse{font-family:var(--display);font-style:italic;font-size:1.22rem;line-height:1.45;margin:0}
 .ref{font-family:var(--ui);font-style:normal;font-weight:700;font-size:.8rem;letter-spacing:.06em;color:var(--hero-muted);display:block;margin-top:6px}
 .player{display:flex;flex-direction:column;gap:10px;padding-top:4px}
 .prow{display:flex;align-items:center;gap:14px}
-.play{width:64px;height:64px;border-radius:50%;border:0;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none;box-shadow:0 6px 18px rgba(0,0,0,.25)}
-:root[data-theme="dark"] .play{color:#1b1406}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .play{color:#1b1406}}
+.play{width:64px;height:64px;border-radius:50%;border:0;background:var(--accent);color:var(--play-ink);display:grid;place-items:center;flex:none;box-shadow:0 4px 14px rgba(40,60,55,.14)}
 .play svg{width:26px;height:26px;fill:currentColor}
 .pinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .pinfo .lbl{font-weight:700;font-size:.9rem}
 input[type=range]{width:100%;accent-color:var(--accent)}
 .times{display:flex;justify-content:space-between;font-size:.75rem;color:var(--hero-muted);font-variant-numeric:tabular-nums}
-.speed{border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--hero-ink);border-radius:999px;padding:5px 10px;font-size:.78rem;font-weight:700;flex:none}
+.speed{border:1px solid var(--line);background:transparent;color:var(--hero-ink);border-radius:999px;padding:5px 10px;font-size:.78rem;font-weight:700;flex:none}
 .note{font-size:.82rem;color:var(--hero-muted)}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:14px}
 .truth{border-left:3px solid var(--accent);padding-left:12px;font-family:var(--read);font-size:1.02rem}
@@ -86,7 +85,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .prayer{font-family:var(--display);font-size:1.2rem;line-height:1.55;font-style:italic}
 .donebtn{border:1.5px solid var(--done);background:transparent;color:var(--done);border-radius:999px;padding:12px;font-weight:700;width:100%}
 .donebtn[aria-pressed="true"]{background:var(--done-soft)}
-.donebtn.ready{background:var(--done);color:#fff}
+.donebtn.ready{background:var(--done);color:var(--play-ink)}
 .cheer{text-align:center;font-weight:700;color:var(--done);background:var(--done-soft);border-radius:12px;padding:10px}
 .stats{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.82rem;justify-content:center}
 .stats b{color:var(--ink);font-variant-numeric:tabular-nums}
@@ -104,9 +103,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .dow{font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.06em;padding:4px 0}
 .day{aspect-ratio:1;max-width:100%;border:1px solid transparent;border-radius:10px;background:transparent;font-weight:600;font-variant-numeric:tabular-nums;position:relative}
 .day:hover{border-color:var(--line)}
-.day.sel{background:var(--hero);color:var(--hero-ink)}
+.day.sel{background:var(--accent);color:var(--play-ink)}
 .day.today{border-color:var(--accent);color:var(--accent)}
-.day.today.sel{color:var(--hero-ink)}
+.day.today.sel{color:var(--play-ink)}
 .day.done::after{content:"";position:absolute;left:50%;bottom:5px;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--done)}
 .legend{display:flex;gap:14px;font-size:.75rem;color:var(--muted);flex-wrap:wrap}
 .legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:middle}
@@ -153,7 +152,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
       <button class="navbtn" id="calNext" type="button" aria-label="Next month">›</button>
     </div>
     <div class="grid" id="calGrid"></div>
-    <div class="legend"><span><i style="border:1.5px solid var(--accent)"></i>Today</span><span><i style="background:var(--hero)"></i>Selected</span><span><i style="background:var(--done)"></i>Done</span></div>
+    <div class="legend"><span><i style="border:1.5px solid var(--accent)"></i>Today</span><span><i style="background:var(--accent)"></i>Selected</span><span><i style="background:var(--done)"></i>Done</span></div>
     <button class="iconbtn" id="calToday" type="button" style="align-self:center">Go to today</button>
   </div>
 </div>
