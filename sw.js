@@ -1,5 +1,5 @@
-// Neeyee's Annual Devotion – offline support
-const SHELL = 'nad-shell-v6';
+// Daily Trust – offline support
+const SHELL = 'nad-shell-v7';
 const AUDIO = 'nad-audio-v1';
 const FONTS = 'nad-fonts-v1';
 const SHELL_FILES = ['./', './index.html', './manifest.webmanifest',
