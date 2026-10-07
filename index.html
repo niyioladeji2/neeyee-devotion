@@ -86,6 +86,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
 .prayer{font-family:var(--display);font-size:1.2rem;line-height:1.55;font-style:italic}
 .donebtn{border:1.5px solid var(--done);background:transparent;color:var(--done);border-radius:999px;padding:12px;font-weight:700;width:100%}
 .donebtn[aria-pressed="true"]{background:var(--done-soft)}
+.donebtn.ready{background:var(--done);color:#fff}
+.cheer{text-align:center;font-weight:700;color:var(--done);background:var(--done-soft);border-radius:12px;padding:10px}
 .stats{display:flex;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:.82rem;justify-content:center}
 .stats b{color:var(--ink);font-variant-numeric:tabular-nums}
 .linkbtn{border:0;background:none;color:var(--accent);font-weight:700;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
@@ -197,8 +199,9 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   </section>
 
   <section class="card">
-    <button class="donebtn" id="doneBtn" type="button" aria-pressed="false">Mark today as done</button>
-    <div class="stats"><span><b id="doneCount">0</b> of 366 days done</span><span>·</span><span>Current streak <b id="streak">0</b></span></div>
+    <button class="donebtn" id="doneBtn" type="button" aria-pressed="false">Mark today as complete</button>
+    <div class="cheer" id="cheer" role="status" hidden></div>
+    <div class="stats"><span><b id="doneCount">0</b> of 366 completed</span><span>·</span><span>Streak <b id="streak">0 days</b></span></div>
   </section>
 
   <section class="card" id="offlineCard">
@@ -232,6 +235,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   if (location.hash){ const h=location.hash.slice(1).match(/^d(\d{1,2})-(\d{1,2})$/); if(h&&byKey[+h[1]+'-'+(+h[2])]) sel={m:+h[1],d:+h[2]}; }
   let mode = store.get('nad.mode','listen');
   let done = store.get('nad.done',{});
+  // completion log: real calendar date (YYYY-MM-DD) -> list of devotion keys completed that day
+  function iso(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+  let log = store.get('nad.log', null);
+  if (!log){ log = {}; Object.keys(done).forEach(k=>{ const [m,d]=k.split('-').map(Number); const dt=new Date(year,m-1,d); if(dt<=now){ (log[iso(dt)]=log[iso(dt)]||[]).push(k); } }); store.set('nad.log',log); }
+  let finished = false;
   const audio = new Audio(); audio.preload='none';
   const speeds=[1,1.25,1.5,0.85]; let si=0;
 
@@ -270,7 +278,8 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     $('plbl').textContent = isToday(sel) ? "Play today's devotion" : 'Play '+MONTHS[d.m-1]+' '+d.d;
     const isDone=!!done[key(sel)];
     $('doneBtn').setAttribute('aria-pressed', isDone);
-    $('doneBtn').textContent = isDone ? '✓ Done. Tap to undo' : (isToday(sel)?'Mark today as done':'Mark '+MONTHS[d.m-1]+' '+d.d+' as done');
+    $('doneBtn').textContent = isDone ? '✓ Completed. Tap to undo' : (finished ? 'Finished listening? Mark as complete' : (isToday(sel)?'Mark today as complete':'Mark '+MONTHS[d.m-1]+' '+d.d+' as complete'));
+    $('doneBtn').classList.toggle('ready', finished && !isDone);
     // mode
     $('modeListen').setAttribute('aria-pressed', mode==='listen');
     $('modeRead').setAttribute('aria-pressed', mode==='read');
@@ -279,7 +288,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
     $('readCard').hidden = mode!=='read';
     // audio
     const url = AUDIO[key(sel)];
-    if (changed){ audio.pause(); setPlaying(false); audio.removeAttribute('src'); $('seek').value=0; $('cur').textContent='0:00'; $('dur').textContent='–:––'; }
+    if (changed){ finished=false; $('cheer').hidden=true; audio.pause(); setPlaying(false); audio.removeAttribute('src'); $('seek').value=0; $('cur').textContent='0:00'; $('dur').textContent='–:––'; }
     $('playBtn').disabled = !url;
     $('audioNote').hidden = !!url;
     if (!url) $('audioNote').textContent = 'The audio for this day isn’t available yet. You can read it instead.';
@@ -288,10 +297,11 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   }
   function stats(){
     $('doneCount').textContent = Object.keys(done).length;
-    let s=0, i=DATA.days.findIndex(x=>x.m===today.m&&x.d===today.d);
-    if(!done[today.m+'-'+today.d]) i--;
-    while(i>=0 && done[DATA.days[i].m+'-'+DATA.days[i].d]){ s++; i--; }
-    $('streak').textContent = s;
+    const dt=new Date(); dt.setHours(12,0,0,0);
+    if(!log[iso(dt)]) dt.setDate(dt.getDate()-1);
+    let s=0; while(log[iso(dt)]){ s++; dt.setDate(dt.getDate()-1); }
+    $('streak').textContent = s + (s===1?' day':' days');
+    return s;
   }
 
   $('playBtn').onclick = ()=>{
@@ -303,7 +313,7 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   audio.onplay=()=>setPlaying(true); audio.onpause=()=>setPlaying(false);
   audio.onloadedmetadata=()=>{ $('dur').textContent=fmt(audio.duration); };
   audio.ontimeupdate=()=>{ if(audio.duration){ $('seek').value = audio.currentTime/audio.duration*100; $('cur').textContent=fmt(audio.currentTime);} };
-  audio.onended=()=>{ setPlaying(false); if(!done[key(sel)]){ done[key(sel)]=true; store.set('nad.done',done); render(false);} };
+  audio.onended=()=>{ setPlaying(false); if(!done[key(sel)]){ finished=true; render(false); $('doneBtn').scrollIntoView({behavior:'smooth',block:'center'}); } };
   $('seek').oninput=e=>{ if(audio.duration) audio.currentTime = e.target.value/100*audio.duration; };
   $('speed').onclick=()=>{ si=(si+1)%speeds.length; audio.playbackRate=speeds[si]; $('speed').textContent=speeds[si]+'×'; };
 
@@ -311,7 +321,22 @@ input[type=range]{width:100%;accent-color:var(--accent)}
   $('modeRead').onclick=()=>{ mode='read'; store.set('nad.mode',mode); audio.pause(); render(false); };
   $('toRead').onclick=$('modeRead').onclick;
   $('prev').onclick=()=>step(-1); $('next').onclick=()=>step(1);
-  $('doneBtn').onclick=()=>{ const k=key(sel); if(done[k]) delete done[k]; else done[k]=true; store.set('nad.done',done); render(false); };
+  function markDone(k){
+    done[k]=true; const t=iso(new Date()); (log[t]=log[t]||[]); if(!log[t].includes(k)) log[t].push(k);
+    store.set('nad.done',done); store.set('nad.log',log);
+  }
+  function unmark(k){
+    delete done[k]; Object.keys(log).forEach(t=>{ log[t]=log[t].filter(x=>x!==k); if(!log[t].length) delete log[t]; });
+    store.set('nad.done',done); store.set('nad.log',log);
+  }
+  $('doneBtn').onclick=()=>{
+    const k=key(sel);
+    if(done[k]){ unmark(k); render(false); return; }
+    markDone(k); finished=false; render(false);
+    const s=stats(); const c=$('cheer');
+    c.textContent = s>1 ? '🔥 '+s+'-day streak! Well done. Keep walking with God.' : '🔥 Day 1 of your streak. Well done!';
+    c.hidden=false; clearTimeout(c._t); c._t=setTimeout(()=>{c.hidden=true;},6000);
+  };
 
   // calendar
   let calM = sel.m;
