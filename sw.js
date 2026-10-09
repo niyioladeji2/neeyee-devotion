@@ -1,5 +1,5 @@
 // Daily Trust – offline support
-const SHELL = 'nad-shell-v10';
+const SHELL = 'nad-shell-v11';
 const AUDIO = 'nad-audio-v1';
 const FONTS = 'nad-fonts-v1';
 const BIBLE = 'nad-bible-v1';
