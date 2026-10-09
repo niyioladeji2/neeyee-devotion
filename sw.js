@@ -1,7 +1,8 @@
 // Daily Trust – offline support
-const SHELL = 'nad-shell-v9';
+const SHELL = 'nad-shell-v10';
 const AUDIO = 'nad-audio-v1';
 const FONTS = 'nad-fonts-v1';
+const BIBLE = 'nad-bible-v1';
 const SHELL_FILES = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'];
 
@@ -9,7 +10,7 @@ self.addEventListener('install', e => {
   e.waitUntil(caches.open(SHELL).then(c => c.addAll(SHELL_FILES)).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => ![SHELL, AUDIO, FONTS].includes(k)).map(k => caches.delete(k))))
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => ![SHELL, AUDIO, FONTS, BIBLE].includes(k)).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
@@ -41,6 +42,16 @@ self.addEventListener('fetch', e => {
       if (hit) return req.headers.get('range') ? rangeFrom(hit, req.headers.get('range')) : hit;
       return fetch(req);
     })());
+    return;
+  }
+
+  if (url.origin === location.origin && url.pathname.includes('/bible/')) {
+    // Bible text never changes: use the saved copy first, save any book that is opened
+    e.respondWith(caches.open(BIBLE).then(async c => {
+      const hit = await c.match(url.pathname);
+      if (hit) return hit;
+      const r = await fetch(req); if (r.ok) await c.put(url.pathname, r.clone()); return r;
+    }));
     return;
   }
 
